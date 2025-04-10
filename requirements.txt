@@ -1,17 +1,3 @@
-{
-  "name": "puppeteer-bypass-api",
-  "version": "1.0.0",
-  "description": "Bypass API using Express, Puppeteer, and node-fetch",
-  "main": "server.js",
-  "scripts": {
-    "start": "node server.js"
-  },
-  "dependencies": {
-    "express": "4.18.2",
-    "puppeteer": "19.0.0",
-    "node-fetch": "2.6.7"
-  },
-  "engines": {
-    "node": "16.x"
-  }
-}
+Flask==2.0.3
+playwright==1.16.0
+requests==2.26.0
