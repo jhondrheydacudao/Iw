@@ -1,9 +1,9 @@
-const express = require('express');
-const puppeteer = require('puppeteer');
-const fetch = require('node-fetch');
+import express from 'express';
+import puppeteer from 'puppeteer';
+import fetch from 'node-fetch';
 
 const app = express();
-const port = process.env.PORT || 3000; // Render uses dynamic ports
+const port = process.env.PORT || 3000;
 
 app.get('/bypass', async (req, res) => {
     const targetUrl = req.query.url;
