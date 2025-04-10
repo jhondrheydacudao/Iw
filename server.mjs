@@ -1,6 +1,6 @@
-import express from 'express';
-import puppeteer from 'puppeteer';
-import fetch from 'node-fetch';
+const express = require('express');
+const puppeteer = require('puppeteer');
+const fetch = require('node-fetch');
 
 const app = express();
 const port = process.env.PORT || 10000;
