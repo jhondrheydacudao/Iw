@@ -3,7 +3,7 @@ import puppeteer from 'puppeteer';
 import fetch from 'node-fetch';
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 10000;
 
 app.get('/bypass', async (req, res) => {
     const targetUrl = req.query.url;
