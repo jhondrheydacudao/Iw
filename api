@@ -3,29 +3,28 @@ const puppeteer = require('puppeteer');
 const fetch = require('node-fetch');
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000; // Render uses dynamic ports
 
 app.get('/bypass', async (req, res) => {
     const targetUrl = req.query.url;
     if (!targetUrl) return res.status(400).json({ success: false, error: 'Missing url parameter' });
 
     try {
-        // Launch Puppeteer browser
         const browser = await puppeteer.launch({
-            headless: true, 
+            headless: true,
             args: ['--no-sandbox', '--disable-setuid-sandbox']
         });
 
         const page = await browser.newPage();
 
-        // Go to the linkvertise page and inject the BotChallenger script
+        // Go to site and inject BotChallenger
         await page.goto('https://rip.linkvertise.lol', { waitUntil: 'domcontentloaded' });
         await page.addScriptTag({ url: 'https://rip.linkvertise.lol/cdn/BotChallenger_CAPTCHA.js' });
 
-        // Wait for BotChallenger to be ready and the token to be available
+        // Wait until BotChallenger is loaded
         await page.waitForFunction(() => window.__BotChallenger__?.getToken, { timeout: 10000 });
 
-        // Get the token from the page's context
+        // Get token from page context
         const token = await page.evaluate(() => {
             window.BCConfig.Hostname = "rip.linkvertise.lol";
             return window.__BotChallenger__.getToken()[0];
@@ -33,11 +32,11 @@ app.get('/bypass', async (req, res) => {
 
         await browser.close();
 
-        // Fetch the bypassed link using the token
+        // Fetch the bypassed link
         const apiRes = await fetch(`https://bypassunlock.usk.lol/gw/bypass?url=${encodeURIComponent(targetUrl)}&tk=${token}`);
         const json = await apiRes.json();
 
-        // Return the exact API response from the bypass service
+        // Return EXACT API response
         res.status(200).json(json);
     } catch (error) {
         res.status(500).json({
@@ -47,7 +46,6 @@ app.get('/bypass', async (req, res) => {
     }
 });
 
-// Start the server
 app.listen(port, () => {
-    console.log(`Bypass API is running on http://localhost:${port}`);
+    console.log(`Bypass API is running on port ${port}`);
 });
