@@ -1,51 +1,43 @@
-const express = require('express');
-const puppeteer = require('puppeteer');
-const fetch = require('node-fetch');
+from flask import Flask, jsonify, request
+from playwright.sync_api import sync_playwright
+import requests
 
-const app = express();
-const port = process.env.PORT || 10000;
+app = Flask(__name__)
 
-app.get('/bypass', async (req, res) => {
-    const targetUrl = req.query.url;
-    if (!targetUrl) return res.status(400).json({ success: false, error: 'Missing url parameter' });
+@app.route('/bypass', methods=['GET'])
+def bypass():
+    target_url = request.args.get('url')
+    if not target_url:
+        return jsonify({'success': False, 'error': 'Missing url parameter'}), 400
 
-    try {
-        const browser = await puppeteer.launch({
-            headless: true,
-            args: ['--no-sandbox', '--disable-setuid-sandbox']
-        });
+    try:
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True)
+            page = browser.new_page()
 
-        const page = await browser.newPage();
+            # Navigate to the linkvertise page and load the captcha
+            page.goto('https://rip.linkvertise.lol', wait_until='domcontentloaded')
+            page.add_script_tag(url='https://rip.linkvertise.lol/cdn/BotChallenger_CAPTCHA.js')
 
-        // Go to site and inject BotChallenger
-        await page.goto('https://rip.linkvertise.lol', { waitUntil: 'domcontentloaded' });
-        await page.addScriptTag({ url: 'https://rip.linkvertise.lol/cdn/BotChallenger_CAPTCHA.js' });
+            # Wait for the BotChallenger token
+            page.wait_for_function('window.__BotChallenger__?.getToken')
 
-        // Wait until BotChallenger is loaded
-        await page.waitForFunction(() => window.__BotChallenger__?.getToken, { timeout: 10000 });
+            # Get the token from the page's context
+            token = page.evaluate('''() => {
+                window.BCConfig.Hostname = "rip.linkvertise.lol";
+                return window.__BotChallenger__.getToken()[0];
+            }''')
 
-        // Get token from page context
-        const token = await page.evaluate(() => {
-            window.BCConfig.Hostname = "rip.linkvertise.lol";
-            return window.__BotChallenger__.getToken()[0];
-        });
+            browser.close()
 
-        await browser.close();
+            # Fetch the bypassed link using the token
+            response = requests.get(f'https://bypassunlock.usk.lol/gw/bypass?url={target_url}&tk={token}')
+            json_data = response.json()
 
-        // Fetch the bypassed link
-        const apiRes = await fetch(`https://bypassunlock.usk.lol/gw/bypass?url=${encodeURIComponent(targetUrl)}&tk=${token}`);
-        const json = await apiRes.json();
+            return jsonify(json_data)
 
-        // Return EXACT API response
-        res.status(200).json(json);
-    } catch (error) {
-        res.status(500).json({
-            success: false,
-            error: error.message
-        });
-    }
-});
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
 
-app.listen(port, () => {
-    console.log(`Bypass API is running on port ${port}`);
-});
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)
