@@ -1,19 +1,14 @@
 {
   "name": "bypass-api",
   "version": "1.0.0",
-  "description": "Linkvertise bypass API using Puppeteer",
-  "main": "server.js",
+  "type": "module",  // This allows us to use import statements
+  "main": "server.mjs",  // Make sure your entry point is correct
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.mjs"
   },
   "dependencies": {
-    "express": "^4.17.3",
-    "puppeteer": "^19.0.0",
-    "node-fetch": "^3.2.0"
-  },
-  "engines": {
-    "node": "16.x"
-  },
-  "author": "Your Name",
-  "license": "MIT"
+    "express": "^4.18.2",
+    "node-fetch": "^3.1.0",
+    "puppeteer": "^19.0.0"
+  }
 }
